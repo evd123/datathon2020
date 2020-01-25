@@ -33,6 +33,10 @@ first_residuals_min <-chevron_training$rate_of_penetration - first_predictions_m
 
 #Residual Plots
 plot((first_predictions_max), first_residuals_max); abline(h = 0, lwd = 2, col = "blue")
+ggplot(chevron_training, mapping = aes(x=first_predictions_max, y=first_residuals_max, color = first_residuals_max)) +
+         geom_point() + xlab("Predictions for Max Depth") + ylab("Residuals for Max Depth") +
+         ggtitle("Max Depth Residuals") + geom_hline(yintercept = 0, col = "dark red") + labs(color='Distance from Residual = 0') 
+
 
 
 #qQ Plots
