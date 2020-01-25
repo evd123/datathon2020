@@ -42,7 +42,6 @@ my_plot = function(sample, my_title){
   qqnorm(sample, main = my_title); qqline(sample, lwd = 2, col = "blue")
 }
 
-(my_plot(first_residuals_max, "first_plot"))
 
 
 #Log1p regression
@@ -51,7 +50,12 @@ bss_maxlog1p <- step(max_log_regression, direction = "backward")
 
 maxlog1p_predictions <- predict(bss_maxlog1p, newdata = chevron_training)
 maxlog1p_residuals <- chevron_training$rate_of_penetration - maxlog1p_predictions
+
+par(mfrow = c(1, 2))
+(my_plot(first_residuals_max, "first_plot"))
 (my_plot(maxlog1p_residuals, "afudfhs"))
+
+#Outliers
 
 summary(bss_maxlog1p)
 
