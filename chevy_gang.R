@@ -74,3 +74,12 @@ gls_wf_regression <-  gls(log(rate_of_penetration) ~ . -segment_id -min_depth  -
 gls_predictions <- predict(object = gls_wf_regression, newdata = chevron_training)
 gls_residuals <- log(chevron_training$rate_of_penetration) - gls_predictions 
 (my_plot(gls_residuals, "gls"))
+
+#Training the Model on the whole dataset 
+gls_regression_final <- gls(log(rate_of_penetration) ~ . -segment_id - min_depth -area_id, data = chevron,  control = list(singular.ok = TRUE))
+gls_final_prediction <- predict(object = gls_regression_final, newdata = chevron_training)
+
+#Interaction term
+gls_interaction <- gls(log(rate_of_penetration) ~ max_depth + formation_id:wellbore_chev_no_id + drillbit_size + bit_model_id + surface_weight_on_bit + surface_rpm, data = chevron_training,  control = list(singular.ok = TRUE))
+gls_interaction_prediction <- predict(object = gls_interaction, newdata = chevron_training)
+gls_inter_residual <- log(chevron_training$rate_of_penetration) - gls_interaction_prediction
