@@ -3,6 +3,7 @@ library(caret)
 library(EnvStats)
 library(pls)
 library(glmnet)
+library(ggplot2)
 
 chevron <- read.csv("C:/Users/5stev/Documents/chevronChallenge/filesForStartOfDatathon/training.csv")
 #Making depth variable
@@ -36,8 +37,8 @@ plot((first_predictions_max), first_residuals_max); abline(h = 0, lwd = 2, col =
 #qQ Plots
 set.seed(334455) # set seed for pseudo-random number generator 
 
-my_plot = function(sample, my_title){
-  qqnorm(sample, main = my_title); qqline(sample, lwd = 2, col = "blue")
+my_plot = function(sample, title){
+  qqnorm(sample, main = title); qqline(sample, lwd = 2, col = "red")
 }
 
 #Log regression transformation 
@@ -83,3 +84,20 @@ gls_final_prediction <- predict(object = gls_regression_final, newdata = chevron
 gls_interaction <- gls(log(rate_of_penetration) ~ max_depth + formation_id:wellbore_chev_no_id + drillbit_size + bit_model_id + surface_weight_on_bit + surface_rpm, data = chevron_training,  control = list(singular.ok = TRUE))
 gls_interaction_prediction <- predict(object = gls_interaction, newdata = chevron_training)
 gls_inter_residual <- log(chevron_training$rate_of_penetration) - gls_interaction_prediction
+
+##GGPLOT2 Source Code
+#Residuals for GLS
+mm <- ggplot(chevron_training, mapping = aes(x=gls_predictions, y=gls_residuals, color = gls_residuals)) +
+  geom_point() + xlab("Predictions for Max Depth") + ylab("Residuals for Max Depth") +
+  ggtitle("Max Depth Residuals Generalized Least Squares") + geom_hline(yintercept = 0, col = "dark red") + labs(color='Distance from \n Residual = 0') 
+mm
+gg <- ggplot(data = chevron_training, mapping = aes(sample = first_residuals_max)) +
+  stat_qq_band() +
+  stat_qq_line(color = "dark red") +
+  stat_qq_point(position = "jitter") +
+  labs(title = "Quantile-Quantile Plot Residuals", x = "Theoretical Quantiles", y = "Sample Quantiles")
+gg
+ggplot(chevron_training, mapping = aes(x=first_predictions_max, y=first_residuals_max, color = first_residuals_max)) +
+  geom_point() + xlab("Predictions for Max Depth") + ylab("Residuals for Max Depth") +
+  ggtitle("Max Depth Residuals") + geom_hline(yintercept = 0, col = "dark red") + labs(color='Distance from \n Residual = 0')
+
