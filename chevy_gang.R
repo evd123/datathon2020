@@ -1,6 +1,7 @@
 library(nlme)
 library(caret)
 library(EnvStats)
+library(pls)
 
 chevron <- read.csv("C:/Users/5stev/Documents/chevronChallenge/filesForStartOfDatathon/training.csv")
 #Making depth variable
@@ -33,10 +34,6 @@ first_residuals_min <-chevron_training$rate_of_penetration - first_predictions_m
 
 #Residual Plots
 plot((first_predictions_max), first_residuals_max); abline(h = 0, lwd = 2, col = "blue")
-ggplot(chevron_training, mapping = aes(x=first_predictions_max, y=first_residuals_max, color = first_residuals_max)) +
-         geom_point() + xlab("Predictions for Max Depth") + ylab("Residuals for Max Depth") +
-         ggtitle("Max Depth Residuals") + geom_hline(yintercept = 0, col = "dark red") + labs(color='Distance from Residual = 0') 
-
 
 
 #qQ Plots
@@ -47,20 +44,40 @@ my_plot = function(sample, my_title){
 }
 
 
-
 #Log1p regression
-max_log_regression <- lm(log1p(rate_of_penetration) ~ . -segment_id -min_depth, data = chevron_training)
+chev_training = chevron_training[,-1]
+max_log_regression <- lm(log(rate_of_penetration) ~ . -min_depth, data = chev_training)
 bss_maxlog1p <- step(max_log_regression, direction = "backward")
+fss_maxlog1p <- step(max_log_regression, direction = "forward")
 
-maxlog1p_predictions <- predict(bss_maxlog1p, newdata = chevron_training)
-maxlog1p_residuals <- chevron_training$rate_of_penetration - maxlog1p_predictions
 
-par(mfrow = c(1, 2))
+maxlog1p_predictions <- predict(max_log_regression, newdata = chev_training)
+maxlog1p_residuals <- log(chevron_training$rate_of_penetration) - maxlog1p_predictions
+(sqrt(sum(maxlog1p_residuals^2) / 3418))
+
+chev_testing <- chevron_testing[,-1]
+maxlogp_test <- predict(max_log_regression, newdata = chev_testing)
+mlogp_resid <- log(chev_testing$rate_of_penetration) - maxlog1p_test
+(sqrt(sum(maxlogp_resid^2) / 3420))
+
+
+
 (my_plot(first_residuals_max, "first_plot"))
 (my_plot(maxlog1p_residuals, "afudfhs"))
 
-#Outliers
+#No formation?
+no_formation_regression <- lm(logp(rate_of_penetration) ~ . -segment_id -min_depth - formation_id, data = chevron_training)
+bss_nfr <- step(no_formation_regression, direction = "backward")
+nf_predictions <- predict(bss_nfr, newdata = chevron_training)
+nf_residuals <- log(chevron_training$rate_of_penetration) - nf_predictions
 
-summary(bss_maxlog1p)
+(sqrt(sum(nf_residuals^2) / 3418))
+(my_plot(nf_residuals, "nf"))
+
+nf_test_predictions <- predict(bss_nfr, newdata = chevron_testing)
+nf_test_residuals <- log(chevron_training$rate_of_penetration) - nf_test_predictions
+
+(sqrt(sum(nf_test_residuals^2) / 3420))
+#Interaction regression
 
 
