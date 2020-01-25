@@ -2,6 +2,7 @@ library(nlme)
 library(caret)
 library(EnvStats)
 library(pls)
+library(glmnet)
 
 chevron <- read.csv("C:/Users/5stev/Documents/chevronChallenge/filesForStartOfDatathon/training.csv")
 #Making depth variable
@@ -66,3 +67,10 @@ nf_test_residuals <- log(chevron_training$rate_of_penetration) - nf_test_predict
 
 (sqrt(sum(nf_test_residuals^2) / 3420))
 
+
+#Generalized Least Squares
+gls_regression <- gls(log(rate_of_penetration) ~ . -segment_id -min_depth - formation_id - area_id, data = chevron_training, control = list(singular.ok = TRUE))
+gls_wf_regression <-  gls(log(rate_of_penetration) ~ . -segment_id -min_depth  - area_id, data = chevron_training, control = list(singular.ok = TRUE))
+gls_predictions <- predict(object = gls_wf_regression, newdata = chevron_training)
+gls_residuals <- log(chevron_training$rate_of_penetration) - gls_predictions 
+(my_plot(gls_residuals, "gls"))
